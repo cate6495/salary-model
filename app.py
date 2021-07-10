@@ -1,21 +1,25 @@
-import numpy as np
-from flask import Flask, request, render_template
+import pandas as pd
+from flask import Flask, request, jsonify
 import pickle
 
 app = Flask(__name__)
-model = pickle.load(open("model.pkl","rb"))
 
-@app.route('/')
+@app.route('/', methods=["GET", "POST"])
 def home():
-    return render_template("index.html")
+    if(request.method=="GET"):
 
-@app.route('/predict', methods=["POST"])
-def predict():
-    float_features= [float(x) for x in request.form.values()]
-    features = [np.array(float_features)]
-    prediction = model.predict(features)
+          data ="hello world"
+          return jsonify({'data': data})
 
-    return render_template("index.html", prediction_text="The salary is $ {}".format(prediction))
+@app.route('/predict/')
+def salary_predict():
+    model = pickle.load(open('model.pkl','rb'))
+    years =  request.args.get('years')
+
+    test_df=pd.DataFrame({'years':[years]})
+
+    pred_salary = model.predict(test_df)
+    return jsonify({'salary': str(pred_salary)})
 
 if __name__=="__main__":
-    app.run(debug=True )
+    app.run(debug=True)
